@@ -1,5 +1,5 @@
 import setuptools
-import packageName._info as package_info
+import nicehash._info as package_info
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
