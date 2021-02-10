@@ -4,6 +4,33 @@ import uuid
 import hmac
 import json
 from hashlib import sha256
+from typing import Union
+
+
+def resolution_converter(timeframe: str) -> str:
+    if timeframe == "minute":
+        return "1"
+    elif timeframe == "hour":
+        return "60"
+    elif timeframe == "day":
+        return "1440"
+    return "60"
+
+
+def filter_params(params: dict) -> dict:
+    """
+    Remove None or empty pairs from the param dicts
+
+    :param params:
+    :type params:
+    :return:
+    :rtype:
+    """
+    filtered_params = {}
+    for k, v in params.items():
+        if v:
+            filtered_params[k] = v
+    return filtered_params
 
 
 def get_epoch_ms_from_now():
@@ -24,18 +51,18 @@ def algo_settings_from_response(algorithm, algo_response):
     return algo_setting
 
 
-def get_encoded_header(obj, method, path, query, body):
+def get_encoded_header(api, method, path, query, body):
     xtime = get_epoch_ms_from_now()
     xnonce = str(uuid.uuid4())
 
-    message = bytearray(obj._key, 'utf-8')
+    message = bytearray(api._key, 'utf-8')
     message += bytearray('\x00', 'utf-8')
     message += bytearray(str(xtime), 'utf-8')
     message += bytearray('\x00', 'utf-8')
     message += bytearray(xnonce, 'utf-8')
     message += bytearray('\x00', 'utf-8')
     message += bytearray('\x00', 'utf-8')
-    message += bytearray(obj._organization, 'utf-8')
+    message += bytearray(api._organization, 'utf-8')
     message += bytearray('\x00', 'utf-8')
     message += bytearray('\x00', 'utf-8')
     message += bytearray(method, 'utf-8')
@@ -49,15 +76,15 @@ def get_encoded_header(obj, method, path, query, body):
         message += bytearray('\x00', 'utf-8')
         message += bytearray(body_json, 'utf-8')
 
-    digest = hmac.new(bytearray(obj._secret, 'utf-8'), message, sha256).hexdigest()
-    xauth = f"{obj._key}:{digest}"
+    digest = hmac.new(bytearray(api._secret, 'utf-8'), message, sha256).hexdigest()
+    xauth = f"{api._key}:{digest}"
 
     headers = {
         'X-Time': str(xtime),
         'X-Nonce': xnonce,
         'X-Auth': xauth,
         'Content-Type': 'application/json',
-        'X-Organization-Id': obj._organization,
+        'X-Organization-Id': api._organization,
         'X-Request-Id': str(uuid.uuid4())
     }
 

@@ -16,7 +16,7 @@ def make_url(base: str, endpoint: str, suffix: str = "") -> str:
     return f"{base}/{endpoint}{suffix}"
 
 
-def encode_params(params: dict) -> str:
+def encode_params(params: dict = None) -> str:
     if params:
         return urlencode(params)
     return ""
@@ -27,11 +27,15 @@ def get(url: str,
         headers: dict = None,
         timeout: int = 2,
         log: str = None,
+        session: requests.Session = None,
         **kwargs) -> Union[requests.Response, None]:
     if params:
         url += f"?{urlencode(params)}"
     try:
-        res = requests.get(url=url, headers=headers, timeout=timeout)
+        if session:
+            res = session.get(url=url, headers=headers, timeout=timeout)
+        else:
+            res = requests.get(url=url, headers=headers, timeout=timeout)
         if log:
             logs.log(message=f"GET {url}", level=log)
             logs.log(message=f"Response: {res}", level=("error" if not res else log))
@@ -47,11 +51,15 @@ def post(url: str,
          files: dict = None,
          timeout: int = 2,
          log: str = None,
+         session: requests.Session = None,
          **kwargs) -> Union[requests.Response, None]:
     if params:
         url += f"?{urlencode(params)}"
     try:
-        res = requests.post(url=url, json=data, files=files, headers=headers, timeout=timeout)
+        if session:
+            res = session.post(url=url, json=data, files=files, headers=headers, timeout=timeout)
+        else:
+            res = requests.post(url=url, json=data, files=files, headers=headers, timeout=timeout)
         if log:
             logs.log(message=f"POST {url}, Body: {data}", level=log)
             logs.log(message=f"Response: {res}", level=("error" if not res else log))
@@ -67,11 +75,15 @@ def put(url: str,
         data: dict = None,
         timeout: int = 2,
         log: str = None,
+        session: requests.Session = None,
         **kwargs) -> Union[requests.Response, None]:
     if params:
         url += f"?{urlencode(params)}"
     try:
-        res = requests.put(url=url, json=data, headers=headers, timeout=timeout)
+        if session:
+            res = session.put(url=url, json=data, headers=headers, timeout=timeout)
+        else:
+            res = requests.put(url=url, json=data, headers=headers, timeout=timeout)
         if log:
             logs.log(message=f"PUT {url}, Body: {data}", level=log)
             logs.log(message=f"Response: {res}", level=("error" if not res else log))
@@ -87,11 +99,15 @@ def delete(url: str,
            data: dict = None,
            timeout: int = 2,
            log: str = None,
+           session: requests.Session = None,
            **kwargs) -> Union[requests.Response, None]:
     if params:
         url += f"?{urlencode(params)}"
     try:
-        res = requests.delete(url=url, json=data, headers=headers, timeout=timeout)
+        if session:
+            res = session.delete(url=url, json=data, headers=headers, timeout=timeout)
+        else:
+            res = requests.delete(url=url, json=data, headers=headers, timeout=timeout)
         if log:
             logs.log(message=f"DELETE {url}, Body: {data}", level=log)
             logs.log(message=f"Response: {res}", level=("error" if not res else log))
@@ -108,7 +124,8 @@ def request(method,
             data: dict = None,
             files: dict = None,
             timeout: int = 2,
-            log: str = None) -> requests.Response:
+            log: str = None,
+            session: requests.Session = None) -> requests.Response:
     return globals()[method](**locals())
 
 
@@ -119,7 +136,8 @@ def request_bool(method,
                  data: dict = None,
                  files: dict = None,
                  timeout: int = 2,
-                 log: str = None) -> bool:
+                 log: str = None,
+                 session: requests.Session = None) -> bool:
     try:
         res = globals()[method](**locals())
         if res:
@@ -136,7 +154,8 @@ def request_json(method,
                  data: dict = None,
                  files: dict = None,
                  timeout: int = 2,
-                 log: str = None) -> dict:
+                 log: str = None,
+                 session: requests.Session = None) -> dict:
     try:
         res = globals()[method](**locals())
         if res:
@@ -154,13 +173,14 @@ def request_type(return_type: str,
                  data: dict = None,
                  files: dict = None,
                  timeout: int = 2,
-                 log: str = None):
+                 log: str = None,
+                 session: requests.Session = None):
     if return_type == "json":
         return request_json(method=method, url=url, params=params, headers=headers, data=data, files=files,
-                            timeout=timeout, log=log)
+                            timeout=timeout, log=log, session=session)
     elif return_type == 'bool':
         return request_bool(method=method, url=url, params=params, headers=headers, data=data, files=files,
-                            timeout=timeout, log=log)
+                            timeout=timeout, log=log, session=session)
     else:
         return request(method=method, url=url, params=params, headers=headers, data=data, files=files,
-                       timeout=timeout, log=log)
+                       timeout=timeout, log=log, session=session)
