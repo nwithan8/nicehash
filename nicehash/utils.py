@@ -65,7 +65,7 @@ def get_encoded_header(api, method, path, query, body):
     message += bytearray(api._organization, 'utf-8')
     message += bytearray('\x00', 'utf-8')
     message += bytearray('\x00', 'utf-8')
-    message += bytearray(method, 'utf-8')
+    message += bytearray(method.upper(), 'utf-8')
     message += bytearray('\x00', 'utf-8')
     message += bytearray(path, 'utf-8')
     message += bytearray('\x00', 'utf-8')
